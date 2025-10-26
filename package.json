@@ -1,0 +1,39 @@
+{
+  "name": "@cyca/zipfs",
+  "version": "1.0.0",
+  "description": "A Node.js-like virtual file system over a single ZIP file with in-memory or disk-based staging, supporting atomic commits back to disk with optional compression.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cvpcasada/zipfs.git"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check": "bun --bun tsc --noEmit",
+    "run": "bun run index.ts",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/yauzl": "^2.10.3",
+    "@types/yazl": "^3.3.0",
+    "tsdown": "^0.15.9"
+  },
+  "peerDependencies": {
+    "typescript": "^5",
+    "yauzl": "^3.2.0",
+    "yazl": "^3.3.1"
+  },
+  "files": [
+    "dist"
+  ]
+}
