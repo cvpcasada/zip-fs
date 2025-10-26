@@ -3,7 +3,7 @@ import { expect } from "bun:test";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-import { open } from "./index";
+import { open } from "./src/index";
 
 describe("ZipFS", () => {
   let testZipPath: string;

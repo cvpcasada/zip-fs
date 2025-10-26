@@ -5,175 +5,21 @@ import * as yauzl from "yauzl";
 import * as yazl from "yazl";
 import { Readable } from "stream";
 
-// ============================================================================
-// Types
-// ============================================================================
+import type { ZipHandle, FileHandle, StatsLike, OverlayEntry, EntryMeta } from "./types";
+import {
+  enoent,
+  eisdir,
+  enotdir,
+  eexist,
+} from "./errors";
+import { normalizePath } from "./path";
+import {
+  streamToBuffer,
+  openReadStreamFromYauzl,
+  promiseFs,
+} from "./utils";
 
-interface OverlayEntryMemory {
-  kind: "memory";
-  data: Buffer;
-  mtime: Date;
-  mode?: number;
-}
-
-interface OverlayEntryDisk {
-  kind: "disk";
-  absPath: string;
-  size: number;
-  mtime: Date;
-  mode?: number;
-}
-
-type OverlayEntry = OverlayEntryMemory | OverlayEntryDisk;
-
-interface EntryMeta {
-  entry: yauzl.Entry;
-  isDirectory: boolean;
-  size: number;
-  mtime: Date;
-  mode?: number;
-}
-
-export interface StatsLike {
-  isFile(): boolean;
-  isDirectory(): boolean;
-  size: number;
-  mtime: Date;
-  mtimeMs: number;
-  mode?: number;
-}
-
-export interface FileHandle {
-  createReadStream(): Readable;
-}
-
-export interface ZipHandle {
-  stat(p: string): Promise<StatsLike>;
-  readFile(p: string, enc?: BufferEncoding): Promise<Buffer | string>;
-  readdir(p: string): Promise<string[]>;
-  createReadStream(p: string): Readable;
-  open(p: string): FileHandle;
-
-  writeFile(
-    p: string,
-    data: Buffer | string,
-    opts?: { mode?: number; mtime?: Date; encoding?: BufferEncoding }
-  ): Promise<void>;
-  mkdir(p: string, opts?: { recursive?: boolean }): Promise<void>;
-  unlink(p: string): Promise<void>;
-
-  commit(): Promise<void>;
-  close(): Promise<void>;
-}
-
-// ============================================================================
-// Errors (Node-like)
-// ============================================================================
-
-class FSError extends Error {
-  constructor(public code: string, public path: string, message: string) {
-    super(message);
-    this.name = "FSError";
-  }
-}
-
-function enoent(p: string): FSError {
-  return new FSError(
-    "ENOENT",
-    p,
-    `ENOENT: no such file or directory, open '${p}'`
-  );
-}
-
-function eisdir(p: string): FSError {
-  return new FSError(
-    "EISDIR",
-    p,
-    `EISDIR: illegal operation on a directory, open '${p}'`
-  );
-}
-
-function enotdir(p: string): FSError {
-  return new FSError("ENOTDIR", p, `ENOTDIR: not a directory, open '${p}'`);
-}
-
-function eexist(p: string): FSError {
-  return new FSError("EEXIST", p, `EEXIST: file already exists, open '${p}'`);
-}
-
-// ============================================================================
-// Path Normalization & Validation
-// ============================================================================
-
-function normalizePath(p: string): string {
-  // Strip leading slash, normalize separators, reject absolute paths
-  if (path.isAbsolute(p)) {
-    throw new Error(`Absolute paths not allowed: ${p}`);
-  }
-
-  let normalized = p.replace(/\\/g, "/").replace(/^\/+/, "");
-
-  // Reject .. traversal
-  if (normalized.includes("..")) {
-    throw new Error(`Path traversal (..) not allowed: ${p}`);
-  }
-
-  // Validate via yauzl
-  const err = yauzl.validateFileName(normalized);
-  if (err !== null) {
-    throw new Error(err);
-  }
-
-  return normalized;
-}
-
-// ============================================================================
-// Utilities
-// ============================================================================
-
-function streamToBuffer(stream: Readable): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    stream.on("data", (chunk) => {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    });
-    stream.on("end", () => {
-      resolve(Buffer.concat(chunks));
-    });
-    stream.on("error", reject);
-  });
-}
-
-function openReadStreamFromYauzl(
-  zipfile: yauzl.ZipFile,
-  entry: yauzl.Entry
-): Promise<Readable> {
-  return new Promise((resolve, reject) => {
-    zipfile.openReadStream(entry, (err, readStream) => {
-      if (err) reject(err);
-      else resolve(readStream);
-    });
-  });
-}
-
-async function promiseFs<T>(
-  fn: (
-    callback: (err: NodeJS.ErrnoException | null, result?: T) => void
-  ) => void
-): Promise<T> {
-  return new Promise((resolve, reject) => {
-    fn((err, result) => {
-      if (err) reject(err);
-      else resolve(result!);
-    });
-  });
-}
-
-// ============================================================================
-// Main Implementation
-// ============================================================================
-
-async function open(
+export async function open(
   zipPath: string,
   options?: {
     compressOnWrite?: boolean;
@@ -588,7 +434,7 @@ async function open(
     });
   }
 
-  function open(p: string): FileHandle {
+  function openFile(p: string): FileHandle {
     return {
       createReadStream() {
         return createReadStream(p);
@@ -855,7 +701,7 @@ async function open(
     readFile,
     readdir,
     createReadStream,
-    open,
+    open: openFile,
     writeFile,
     mkdir,
     unlink,
@@ -863,5 +709,3 @@ async function open(
     close,
   };
 }
-
-export { open };

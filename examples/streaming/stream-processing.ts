@@ -1,4 +1,4 @@
-import { open } from "../../index.ts";
+import { open } from "../../src/index.ts";
 import * as fs from "fs";
 import { Transform } from "stream";
 import * as path from "path";

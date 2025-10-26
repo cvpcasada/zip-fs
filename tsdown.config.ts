@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["./index.ts"],
+  entry: ["./src/index.ts"],
   outDir: "./dist",
   format: ["esm", "cjs"],
   target: "esnext",

@@ -19,8 +19,8 @@
   "scripts": {
     "build": "tsdown",
     "check": "bun --bun tsc --noEmit",
-    "run": "bun run index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "devDependencies": {
     "@types/bun": "latest",
