@@ -1,9 +1,9 @@
 import { test, describe, beforeEach, afterEach } from "bun:test";
 import { expect } from "bun:test";
-import * as fs from "fs";
-import * as path from "path";
-import * as os from "os";
-import { open } from "./src/index";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as os from "node:os";
+import { open } from "../src/index";
 
 describe("ZipFS", () => {
   let testZipPath: string;
@@ -187,22 +187,6 @@ describe("ZipFS", () => {
       }
 
       expect(content).toBe("hello world");
-      await zip.close();
-    });
-
-    test("open() returns FileHandle with createReadStream", async () => {
-      const zip = await open(testZipPath);
-
-      await zip.writeFile("test.txt", "test content");
-      const handle = zip.open("test.txt");
-
-      const stream = handle.createReadStream();
-      let content = "";
-      for await (const chunk of stream) {
-        content += chunk;
-      }
-
-      expect(content).toBe("test content");
       await zip.close();
     });
   });

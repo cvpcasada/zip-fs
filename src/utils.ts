@@ -30,12 +30,12 @@ export function openReadStreamFromYauzl(
   });
 }
 
-export async function promiseFs<T>(
+export async function promisify<T>(
   fn: (
     callback: (err: NodeJS.ErrnoException | null, result?: T) => void
   ) => void
 ): Promise<T> {
-  return new Promise((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
     fn((err, result) => {
       if (err) reject(err);
       else resolve(result!);

@@ -38,26 +38,3 @@ export interface StatsLike {
   mtimeMs: number;
   mode?: number;
 }
-
-export interface FileHandle {
-  createReadStream(): Readable;
-}
-
-export interface ZipHandle {
-  stat(p: string): Promise<StatsLike>;
-  readFile(p: string, enc?: BufferEncoding): Promise<Buffer | string>;
-  readdir(p: string): Promise<string[]>;
-  createReadStream(p: string): Readable;
-  open(p: string): FileHandle;
-
-  writeFile(
-    p: string,
-    data: Buffer | string,
-    opts?: { mode?: number; mtime?: Date; encoding?: BufferEncoding }
-  ): Promise<void>;
-  mkdir(p: string, opts?: { recursive?: boolean }): Promise<void>;
-  unlink(p: string): Promise<void>;
-
-  commit(): Promise<void>;
-  close(): Promise<void>;
-}

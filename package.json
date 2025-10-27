@@ -1,5 +1,5 @@
 {
-  "name": "@cyca/zipfs",
+  "name": "zip-fs",
   "version": "1.0.0",
   "description": "A Node.js-like virtual file system over a single ZIP file with in-memory or disk-based staging, supporting atomic commits back to disk with optional compression.",
   "license": "MIT",
