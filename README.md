@@ -81,8 +81,6 @@ readdir(p: string): Promise<string[]>
 // Create a readable stream for a file
 createReadStream(p: string): Readable
 
-// Get FileHandle with createReadStream method
-open(p: string): FileHandle
 ```
 
 **StatsLike interface:**
